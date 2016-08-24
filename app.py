@@ -23,12 +23,12 @@ print (record_metadata.offset)
 producer.send('demo-topic', key=b'foo', value=b'bar')
 
 # encode objects via msgpack
-producer = KafkaProducer(value_serializer=msgpack.dumps)
-producer.send('msgpack-topic', {'key': 'value'})
+#producer = KafkaProducer(value_serializer=msgpack.dumps)
+#producer.send('msgpack-topic', {'key': 'value'})
 
 # produce json messages
-producer = KafkaProducer(value_serializer=lambda m: json.dumps(m).encode('ascii'))
-producer.send('json-topic', {'key': 'value'})
+#producer = KafkaProducer(value_serializer=lambda m: json.dumps(m).encode('ascii'))
+#producer.send('json-topic', {'key': 'value'})
 
 # produce asynchronously
 for _ in range(100):
