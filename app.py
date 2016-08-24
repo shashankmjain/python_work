@@ -1,43 +1,41 @@
-from kafka import SimpleProducer, SimpleClient
+from kafka import KafkaProducer
+from kafka.errors import KafkaError
 
-# To send messages asynchronously
-client = SimpleClient('192.168.27.185:9092')
-producer = SimpleProducer(client, async=True)
-producer.send_messages('demo-topic', b'async message')
+producer = KafkaProducer(bootstrap_servers=['192.168.27.185:9092'])
 
-# To send messages in batch. You can use any of the available
-# producers for doing this. The following producer will collect
-# messages in batch and send them to Kafka after 20 messages are
-# collected or every 60 seconds
-# Notes:
-# * If the producer dies before the messages are sent, there will be losses
-# * Call producer.stop() to send the messages and cleanup
-producer = SimpleProducer(client,
-                          async=True,
-                          batch_send_every_n=20,
-                          batch_send_every_t=60)
-						  
-						client = SimpleClient('192.168.27.185:9092')
-consumer = SimpleConsumer(client, "my-group", "demo-topic")
-for message in consumer:
-    # message is raw byte string -- decode if necessary!
-    # e.g., for unicode: `message.decode('utf-8')`
-    print(message)
+# Asynchronous by default
+future = producer.send('demo-topic', b'raw_bytes')
 
+# Block for 'synchronous' sends
+try:
+    record_metadata = future.get(timeout=10)
+except KafkaError:
+    # Decide what to do if produce request failed...
+    log.exception()
+    pass
 
-# Use multiprocessing for parallel consumers
-from kafka import MultiProcessConsumer
+# Successful result returns assigned partition and offset
+print (record_metadata.topic)
+print (record_metadata.partition)
+print (record_metadata.offset)
 
-# This will split the number of partitions among two processes
-consumer = MultiProcessConsumer(client, "my-group", "demo-topic", num_procs=2)
+# produce keyed messages to enable hashed partitioning
+producer.send('demo-topic', key=b'foo', value=b'bar')
 
-# This will spawn processes such that each handles 2 partitions max
+# encode objects via msgpack
+producer = KafkaProducer(value_serializer=msgpack.dumps)
+producer.send('msgpack-topic', {'key': 'value'})
 
+# produce json messages
+producer = KafkaProducer(value_serializer=lambda m: json.dumps(m).encode('ascii'))
+producer.send('json-topic', {'key': 'value'})
 
-for message in consumer:
-    print(message)
+# produce asynchronously
+for _ in range(100):
+    producer.send('demo-topic', b'msg')
 
-for message in consumer.get_messages(count=5, block=True, timeout=4):
-    print(message)
+# block until all async messages are sent
+producer.flush()
 
-client.close()
+# configure multiple retries
+producer = KafkaProducer(retries=5)
