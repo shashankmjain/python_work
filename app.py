@@ -1,4 +1,5 @@
 from kafka import KafkaProducer
+from kafka import KafkaConsumer
 from kafka.errors import KafkaError
 
 producer = KafkaProducer(bootstrap_servers=['192.168.27.185:9092'])
