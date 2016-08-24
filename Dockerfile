@@ -1,8 +1,8 @@
 FROM ubuntu:12.04
 
 MAINTAINER Matt Ward
-COPY . /app
-WORKDIR /app
+COPY . /app1
+WORKDIR /app1
 RUN apt-get update
 RUN apt-get -y install software-properties-common python-software-properties
 RUN add-apt-repository ppa:fkrull/deadsnakes
