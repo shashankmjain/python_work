@@ -7,7 +7,7 @@ producer = KafkaProducer(bootstrap_servers=['192.168.27.185:9092'])
 # Asynchronous by default
 future = producer.send('demo-topic', b'raw_bytes')
 
-# Block for 'synchronous' sends
+## Block for 'synchronous' sends
 try:
     record_metadata = future.get(timeout=10)
 except KafkaError:
